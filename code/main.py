@@ -33,7 +33,7 @@ class Player(pygame.sprite.Sprite):
 
         atk_btn = pygame.key.get_just_pressed()
         if atk_btn[pygame.K_SPACE] and self.can_atk:
-            Laser(laser_surf, self.rect.midtop, sprites)
+            Laser(laser_surf, self.rect.midtop, (sprites, laser_sprites))
             self.can_atk = False
             self.shot_atk_timer = pygame.time.get_ticks()
 
@@ -51,7 +51,7 @@ class Meteor(pygame.sprite.Sprite):
         self.image = surf
         self.rect = self.image.get_frect(center = pos)
         self.start_time = pygame.time.get_ticks()
-        self.life_time = 3000
+        self.life_time = 3000 # di na kailangan?
         self.direction = pygame.Vector2(uniform(-0.5, 0.5), 1)
         self.speed = randint(400,500)
 
@@ -77,6 +77,19 @@ class Laser(pygame.sprite.Sprite):
             self.kill()
 
 
+def collisions():
+    meteor_collided = pygame.sprite.spritecollide(player, meteor_sprites, False)
+    if meteor_collided:
+        player.kill()
+        # print(f"You Died! {meteor_collided[0]}")
+
+    for laser in laser_sprites:
+        laser_collided = pygame.sprite.spritecollide(laser, meteor_sprites, True)
+        if laser_collided:
+            laser.kill()
+            print(laser_collided[0])
+
+
 #General setup
 pygame.init() #Initialize pygame
 
@@ -94,6 +107,8 @@ meteor_surf = pygame.image.load(join("images", "meteor.png")).convert_alpha()
 
 # Sprites - Draw order is a must
 sprites = pygame.sprite.Group()
+meteor_sprites = pygame.sprite.Group()
+laser_sprites = pygame.sprite.Group()
 
 # Helps on creating stars multiple times
 for i in range(20):
@@ -116,10 +131,12 @@ while running:
 
         if event.type == meteor_event:
             x, y = randint(0, WINDOW_WIDTH), randint(-200, -100)
-            Meteor(meteor_surf, (x,y), sprites)
+            Meteor(meteor_surf, (x,y), (sprites, meteor_sprites))
 
     # Updates the game
     sprites.update(dt)
+
+    collisions()
 
     # Draw the game
     screen_display.fill("black")
