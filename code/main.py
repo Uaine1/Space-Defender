@@ -78,10 +78,11 @@ class Laser(pygame.sprite.Sprite):
 
 
 def collisions():
-    meteor_collided = pygame.sprite.spritecollide(player, meteor_sprites, False)
+    global running # not an ideal approach
+     
+    meteor_collided = pygame.sprite.spritecollide(player, meteor_sprites, True)
     if meteor_collided:
-        player.kill()
-        # print(f"You Died! {meteor_collided[0]}")
+        running = False
 
     for laser in laser_sprites:
         laser_collided = pygame.sprite.spritecollide(laser, meteor_sprites, True)
@@ -90,12 +91,20 @@ def collisions():
             print(laser_collided[0])
 
 
+def display_score():
+    current_time = pygame.time.get_ticks() // 100
+    text_surf = font.render(f"Score: {current_time}", True, "#d4d3cf")
+    text_rect = text_surf.get_frect(midbottom = (WINDOW_WIDTH / 2, WINDOW_HEIGHT - 50))
+    pygame.draw.rect(screen_display, "#576d96", text_rect.inflate(20, 20).move(0, -5), 5, 10)
+    screen_display.blit(text_surf, text_rect)
+
+
 #General setup
 pygame.init() #Initialize pygame
 
 #Create window
 WINDOW_WIDTH, WINDOW_HEIGHT = 1080, 680
-pygame.display.set_caption("Space Defender")
+pygame.display.set_caption("Space Dunno")
 screen_display = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 running = True
 clock = pygame.time.Clock() # helps framerate
@@ -104,6 +113,8 @@ clock = pygame.time.Clock() # helps framerate
 star_surf = pygame.image.load(join("images", "star.png")).convert_alpha()
 laser_surf = pygame.image.load(join("images", "laser.png")).convert_alpha()
 meteor_surf = pygame.image.load(join("images", "meteor.png")).convert_alpha()
+font = pygame.font.Font(join("images", "Oxanium-Bold.ttf"), 30)
+text_surf = font.render("Wassup", True, "#d4d3cf")
 
 # Sprites - Draw order is a must
 sprites = pygame.sprite.Group()
@@ -137,11 +148,12 @@ while running:
     sprites.update(dt)
 
     collisions()
-
-    # Draw the game
-    screen_display.fill("black")
-    sprites.draw(screen_display)
     
+    # Draw the game
+    screen_display.fill("#2f3036")
+    sprites.draw(screen_display)
+    display_score()
+
     pygame.display.update()
 
 pygame.quit()
